@@ -67,15 +67,6 @@ uvicorn main:app --reload
 cd frontend && cp .env.example .env && npm install && npm run dev
 ```
 
-## Key interview talking points
-
-1. **Why two backend services** — lets each team/language own its domain; chat needs Socket.io's room+ack ergonomics, the ticker needs a long-lived background task feeding a fan-out WebSocket, which FastAPI's `lifespan` + `asyncio.create_task` model handles cleanly.
-2. **Upstream resilience** — `binance_client.py` reconnects with exponential backoff (capped at 30s) so a dropped upstream connection doesn't silently stop the feed.
-3. **Fan-out, not per-client upstream connections** — one Binance WS connection serves every connected browser tab, via `ConnectionManager`.
-4. **Auth** — JWT signed by chat-service, verified both on REST routes (`requireAuth`) and on the Socket.io handshake (`socketAuth`) before a connection is accepted.
-5. **Backfill** — both chat (`GET /api/rooms/:id/messages`) and analytics (`GET /api/history`) expose REST history endpoints so the UI isn't empty on first load, with live data appended after.
-6. **What's next at scale** — Redis pub/sub between the ingestion task and WS layer to support multiple analytics-service replicas; MongoDB → Timescale/InfluxDB for real production time-series volume.
-
 ## Testing
 
 **chat-service** — Jest + Supertest + `mongodb-memory-server` (spins up a real, ephemeral MongoDB per test run, no mocking of Mongoose itself):
