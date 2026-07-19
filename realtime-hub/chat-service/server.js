@@ -6,7 +6,8 @@ const connectDB = require('./src/config/db');
 const initChatSocket = require('./src/sockets/chatSocket');
 
 const PORT = process.env.PORT || 5000;
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const rawOrigins = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const CLIENT_ORIGIN = rawOrigins.split(',').map(o => o.trim());
 
 const app = createApp(CLIENT_ORIGIN);
 const httpServer = http.createServer(app);
@@ -23,3 +24,5 @@ start().catch((err) => {
   console.error('[chat-service] failed to start:', err);
   process.exit(1);
 });
+
+// Trigger nodemon reload to load updated env values
